@@ -12,6 +12,11 @@ export default function UploadBox({ onFileUpload, onSubmit, onMappingResult }: {
   const [variationColumns, setVariationColumns] = useState<string[]>([]);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState('Simple Product Forms');
+  
+  // Add loading states
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  
   type AiToggleKey = 'titles' | 'descriptions' | 'meta';
   const aiToggles: { label: string; key: AiToggleKey }[] = [
     { label: 'AI Product Titles', key: 'titles' },
@@ -41,68 +46,103 @@ export default function UploadBox({ onFileUpload, onSubmit, onMappingResult }: {
     return Math.floor(Math.random() * 3) + 1;
   }
 
-  // Upload and mapping integration
+  // Enhanced Upload and mapping integration with timeout handling
   const handleSend = async () => {
     if (!selectedFile) return;
     const clientNumber = getRandomClientNumber();
-    // 1. Upload file
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('client_number', clientNumber.toString());
+    
+    setIsLoading(true);
+    setLoadingMessage('Uploading file...');
     
     try {
-      const response = await fetch(`${API_URL}/upload`, {
+      // 1. Upload file
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('client_number', clientNumber.toString());
+      
+      console.log('🚀 Starting upload process...');
+      console.log('📁 File:', selectedFile.name);
+      console.log('🔢 Client Number:', clientNumber);
+      
+      const uploadResponse = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         body: formData,
       });
       
-      if (!response.ok) throw new Error('Upload failed');
-      const uploadData = await response.json();
-      console.log("uploadData: ", uploadData);
+      console.log('📤 Upload response status:', uploadResponse.status);
+      
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        console.error('❌ Upload failed:', errorText);
+        throw new Error(`Upload failed: ${uploadResponse.status} - ${errorText}`);
+      }
+      
+      const uploadData = await uploadResponse.json();
+      console.log("✅ Upload successful:", uploadData);
       
       if (!uploadData.file_id) {
+        console.error('❌ No file_id in upload response:', uploadData);
         throw new Error('No file ID received from upload');
       }
       
-      console.log("uploadData.file_id: ", uploadData.file_id);
+      console.log("📋 File ID received:", uploadData.file_id);
       
-      // 2. Generate AI mappings
-      const mappingResponse = await fetch(`${API_URL}/mapping/ai-suggested?file_id=${uploadData.file_id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      // 2. Generate AI mappings with extended timeout
+      setLoadingMessage('Generating AI mappings... This may take a few minutes.');
+      console.log('🤖 Starting AI mapping for file:', uploadData.file_id);
+      
+      // Create a timeout promise for 5 minutes (300 seconds)
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout after 5 minutes')), 300000);
       });
       
+      // Create the fetch promise
+      const fetchPromise = fetch(`${API_URL}/mapping/ai-suggested?file_id=${uploadData.file_id}`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
+      });
+      
+      // Race between fetch and timeout
+      const mappingResponse = await Promise.race([fetchPromise, timeoutPromise]) as Response;
+      
+      console.log('🤖 AI mapping response received:', mappingResponse.status);
+      
       if (!mappingResponse.ok) {
-        throw new Error('AI mapping failed');
+        const errorText = await mappingResponse.text();
+        console.error('❌ AI mapping failed:', errorText);
+        throw new Error(`AI mapping failed: ${mappingResponse.status} - ${errorText}`);
       }
       
       const mappingData = await mappingResponse.json();
-      console.log("mappingData: ", mappingData);
-      console.log("mappingData.file_id: ", mappingData.file_id);
-      console.log("mappingData.file_id.data: ", mappingData.file_id.data);
-      console.log("mappingData.rows: ", mappingData.rows);
+      console.log("✅ AI mapping successful:", mappingData);
       
       // 3. Pass the mapping result to parent component
       if (onMappingResult) {
         const resultData = {
           ...mappingData,
           file_id: uploadData.file_id,
-          data: mappingData.file_id.data,
-          headers: mappingData.file_id.headers,
-          rows: mappingData.file_id.rows
+          data: mappingData.file_id?.data || mappingData.data,
+          headers: mappingData.file_id?.headers || mappingData.headers,
+          rows: mappingData.file_id?.rows || mappingData.rows
         };
-        console.log('UploadBox - passing to parent:', resultData);
+        console.log('📤 Passing to parent component:', resultData);
         onMappingResult(resultData);
       }
       
       // 4. Call onSubmit to trigger step change
       if (onSubmit) {
+        console.log('🔄 Calling onSubmit...');
         onSubmit(selectedFile);
       }
       
     } catch (error) {
-      console.error('Error in handleSend:', error);
-      // You might want to show an error message to the user here
+      console.error('💥 Error in handleSend:', error);
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -162,14 +202,32 @@ export default function UploadBox({ onFileUpload, onSubmit, onMappingResult }: {
             Select Template
           </button>
           <button
-            className="ml-auto bg-[#232F4B] hover:bg-blue-900 text-white rounded-full w-7 h-7 flex items-center justify-center transition"
+            className={`ml-auto rounded-full w-7 h-7 flex items-center justify-center transition ${
+              isLoading 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-[#232F4B] hover:bg-blue-900 cursor-pointer'
+            }`}
             onClick={handleSend}
+            disabled={isLoading}
             tabIndex={0}
             onKeyDown={handleKeyDown}
           >
-            <img src="/assets/icons/Navigation.svg" alt="Submit" className="w-4 h-4" />
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            ) : (
+              <img src="/assets/icons/Navigation.svg" alt="Submit" className="w-4 h-4" />
+            )}
           </button>
         </div>
+        
+        {/* Loading message */}
+        {isLoading && (
+          <div className="mt-2 text-center">
+            <div className="text-sm text-gray-600">{loadingMessage}</div>
+            <div className="mt-1 text-xs text-gray-500">Please wait, this may take a few minutes...</div>
+          </div>
+        )}
+        
         {/* Modal Popup for Type of Mapping */}
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
@@ -277,4 +335,4 @@ export default function UploadBox({ onFileUpload, onSubmit, onMappingResult }: {
       </div>
     </div>
   );
-} 
+}

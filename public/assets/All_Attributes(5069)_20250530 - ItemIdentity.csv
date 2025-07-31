@@ -1,0 +1,7 @@
+ColumnId,ColumnName,AttributeType,FieldValidation,dealerColumnName,MappedColumnID
+39,MatchingSKUs,Text Field,Optional,,0
+40,UpSellSKUs,Text Field,Optional,,0
+41,GroupedProductSKUs,Text Field,Optional,,0
+3,DealerStockNumber,Text Field,Optional,,0
+234,IsActive,Boolean,Required,,0
+242,VendorName,Text Field,Optional,,0

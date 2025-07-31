@@ -1,0 +1,17 @@
+RetailerStockNumber,StyleNumber,VisibleAs,ParentSKU,ProductType,SelectedAttributes,ProductName,ProductDescription,CustomAttribute,CustomAttributeLabel,ConfigurableControlType,IsConfigurableProduct,ControlDisplayOrder,Categories,Collections,PriceType,WholesaleBasePrice,MSRP,MetalType,MetalColor,ImagePath,Gender
+Example:,,,,,,,,,,,,,,,,,,,,,
+Metal Type & Metal Color,,Use this method when creating a configurable product that is supported by our standard configurable atributes.,,,,,,,,,,,,,,,,,,,
+PARENT-SKU,PARENT-SKU,1,,1,"Metal Type, Metal Color",General product name,General product description,These columns are not used for a standard configurable product.,,"DropDownList,DropDownList",1,"0,0",Product category,Product Collection,1,100,200,18k Gold ,White,main-image-white.jpg,Ladies
+CHILD1-SKU,CHILD1-SKU,0,PARENT-SKU,0,,Product name for rose gold,Product description for rose gold,,,,0,,Product category,Product Collection,1,100,200,18k Gold ,Rose,main-image-rose.jpg,Ladies
+CHILD2-SKU,CHILD2-SKU,0,PARENT-SKU,0,,Product name for white gold,Product description for white gold,,,,0,,Product category,Product Collection,1,100,200,18k Gold ,White,child-image-white.jpg,Ladies
+CHILD3-SKU,CHILD3-SKU,0,PARENT-SKU,0,,Product name for yellow gold,Product description for yellow gold,,,,0,,Product category,Product Collection,1,100,200,18k Gold ,Yellow,child-image-yellow.jpg,Ladies
+CHILD4-SKU,CHILD4-SKU,0,PARENT-SKU,0,,Product name for silver,Product description for silver,,,,0,,Product category,Product Collection,1,75,150,Silver: Sterling,Silver,child-image-silver.jpg,Ladies
+,,,,,,,,,,,,,,,,,,,,,
+Example:,,,,,,,,,,,,,,,,,,,,,
+Unsupported attribute,,,,,,,,,,,,,,,,,,,,,
+,,Use this method when creating a configurable product that is not supported by our standard configurable attributes. ,,,,,,,    ,,,,,,,,,,,,
+PARENT-SKU,PARENT-SKU,1,,1,Custom Attribute,General product name,General product description,,Choose variation:,"DropDownList,DropDownList",1,"0,0",Product category,Product Collection,1,100,200,Steel: Stainless,Silver,main-image.jpg,Ladies
+CHILD1-SKU,CHILD1-SKU,0,PARENT-SKU,0,,Product name for variation 1,Product description for variation 1, ,,,0,,Product category,Product Collection,1,100,200,Steel: Stainless,Silver,main-image.jpg,Ladies
+CHILD2-SKU,CHILD2-SKU,0,PARENT-SKU,0,,Product name for variation 2,Product description for variation 2,Variation 2,,,0,,Product category,Product Collection,1,100,200,Steel: Stainless,Silver,child-image2.jpg,Ladies
+CHILD3-SKU,CHILD3-SKU,0,PARENT-SKU,0,,Product name for variation 3,Product description for variation 3,Variation 3,,,0,,Product category,Product Collection,1,100,200,Steel: Stainless,Silver,child-image3.jpg,Ladies
+CHILD4-SKU,CHILD4-SKU,0,PARENT-SKU,0,,Product name for variation 4,Product description for variation 4,Variation 4,,,0,,Product category,Product Collection,1,100,200,Steel: Stainless,Silver,child-image4.jpg,Ladies
